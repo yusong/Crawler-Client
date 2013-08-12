@@ -1,9 +1,5 @@
 define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent'], function(dispatcher, async, agent){
 
-	// var Worker = function(){
-	// 	dispatcher.jingdong('a');
-	// };
-
 	var Worker = function() {
 
 		var _self = this;
@@ -26,19 +22,25 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent'], fu
 		// }
 		_self.queue = async.queue(function(task, callback){
 			if( dispatcher[task.handler] ) {
+				try {
 				dispatcher[task.handler](task.url, function(err, data){
 					if( err ) callback();
 					else {
+
+						console.dir(data);
+
 						_self.cargo.push({
 							handler : task.handler,
-							// data : data
-							data : {
-								urls : [task.url]
-							}
+							data : data
 						});
 						callback();
 					}
-				});				
+				});							
+			} catch(e) {
+				console.log('Page Error.'+e);
+				callback();
+			}
+		
 			} else {
 				console.log('Handle: '+task.handler+' Not Found.');
 				callback();
@@ -77,21 +79,17 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent'], fu
 			});
 
 			callback();
-		}, 1);
+		}, 10);
 
 		_self.finishedJobsCnt = 0;
 
 		_self.run = function(callback) {
-			// console.log('##### call run function.');
-			// _self.queue.push({ handler:'jingdong', url:'www.baidu.com' });
-			// _self.queue.push({ handler:'jingdong', url:'www.google.com.hk' });
-			// _self.queue.push({ handler:'jingdong', url:'www.yahoo.com' });
-			// _self.queue.push({ handler:'jingdong', url:'www.sina.com' });
 
 			if( !_self.queue.length() ) {
 				// Last Job Has been Finished.
 				if( _self.finishedJobsCnt++ > 15 && (typeof window !== 'undefined') ) {
 					window.location.reload();
+					return;
 				}
 
 				post_agent(_self.config.server + 'pull', '', function(err, task){
@@ -100,7 +98,8 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent'], fu
 						if( task ) {
 							try {
 								task = JSON.parse(task);
-								console.log('Pull Job as: '+task);
+								console.log('Pull Job as: ');console.dir(task);
+
 								if( task.urls ) {
 									task.urls.forEach(function(url){
 										_self.queue.push({
@@ -145,7 +144,7 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent'], fu
 		 */
 		var loop = function(err, sec) {
 			if( err ) console.log('ERROR: ' + err);
-			var second = sec || 5;
+			var second = sec || 30;
 			setTimeout(function(){
 				if( _self.on ) _self.run(loop);
 			}, second*1000);

@@ -2,9 +2,17 @@
 <html>
 <head>
 	<title></title>
+	<script type="text/javascript" src="tools/jquery-1.9.1.min.js"></script>
+	<script type="text/javascript" src="js/options.js"></script>
 </head>
 <body>
 	<p>hello world</p>
+	<form action="http://127.0.0.1:8000/getHandler" method="POST">
+		URL: <input type="test" >
+		<select id="handler" name="handler">
+			<option>选择Handler</option>
+		</select>
+	</form>
 </body>
 </html>
 
