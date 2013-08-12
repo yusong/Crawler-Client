@@ -7,11 +7,11 @@
 </head>
 <body>
 	<p>hello world</p>
-	<form action="http://127.0.0.1:8000/getHandler" method="POST">
-		URL: <input type="test" >
-		<select id="handler" name="handler">
-			<option>选择Handler</option>
+	<form action="http://127.0.0.1:8000/push" method="POST">
+		URL: <input type="text" name="url" id="url" >
+		<select id="handler" name="handler" id="handler">
 		</select>
+		<p id="submit">提交</p>
 	</form>
 </body>
 </html>

@@ -1,4 +1,4 @@
-(function(){
+$(document).ready(function(){
 
 	/* Get Handler */
 	$.ajax({
@@ -16,4 +16,24 @@
 		}
 	});
 
-}());
+
+	$('#submit').click(function(){
+		var sendData = {};
+		sendData.urls = [$('#url').val()];
+		sendData.handler = $('#handler').val();
+
+		$.ajax({
+			url : 'http://127.0.0.1:8000/push',
+			type : 'POST',
+			data : JSON.stringify(sendData),
+			success : function(data, status) {
+				console.log(data);
+			},
+			error : function (XMLHttpRequest, textStatus, errorThrown) {
+				console.log('ERROR: Push Task Fail.');
+			}
+		});
+		// console.dir(JSON.stringify(sendData));
+	});
+
+});
