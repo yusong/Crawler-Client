@@ -4,6 +4,21 @@ require(['modules/worker', 'tools/jquery-1.9.1.min'], function(worker, jq) {
 	worker.turn_on_off();
 
 	// $.ajax({
+	// 	url : 'http://www.tmall.com/go/rgn/mfp2012/all-cat-asyn.php',
+	// 	type : 'GET',
+	// 	success : function(data, status){
+	// 		// console.log(data);
+	// 		// $(data).find('.j_SubView .subItem .subItem-cat a').each(function(){
+	// 		// 	console.log($(this).attr("href") + $(this).html());
+	// 		// });
+	// 			console.log($(data).find('.j_SubView .subItem .subItem-cat a'));
+	// 	},
+	// 	error : function (XMLHttpRequest, textStatus, errorThrown) {
+	// 		console.log('ERROR');
+	// 	}
+	// });
+
+	// $.ajax({
 	// 	url : 'http://channel.jd.com/kitchenware.html',
 	// 	type : 'POST',
 	// 	success : function(data, status){

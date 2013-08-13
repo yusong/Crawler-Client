@@ -2,6 +2,9 @@ define(['modules/handler/fetcher'], function(fetcher){
 
 	var Dispatcher = function() {};
 
+	/**
+	 * Dispatcher of JingDong
+	 */
 	Dispatcher.prototype.jingdong = function(url, callback) {
 
 		if( url.match('channel.jd.com') ) {
@@ -32,8 +35,27 @@ define(['modules/handler/fetcher'], function(fetcher){
 			});
 		}
 		else {
-			// console.log('No Fetcher For ' + url);
-			callback('No Fetcher For ' + url);
+			callback('No JingDong Fetcher For ' + url);
+		}
+
+	};
+
+	/**
+	 * Dispatcher of Tmall
+	 */
+	Dispatcher.prototype.tmall = function(url, callback) {
+
+		if( url.match('www.tmall.com') ) {
+			// Index Page, async Category
+			fetcher.tmall.index('http://www.tmall.com/go/rgn/mfp2012/all-cat-asyn.php', function(err, result){
+				if(err) ;
+				else {
+					callback(null, result);
+				}
+			});
+		} 
+		else {
+			callback('No Tmall Fetcher For ' + 'http://www.tmall.com/go/rgn/mfp2012/all-cat-asyn.php');
 		}
 
 	};
