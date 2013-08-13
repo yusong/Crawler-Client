@@ -1,7 +1,22 @@
-require(['modules/worker', 'tools/jquery-1.9.1.min'], function(worker, jq) {
+require(['modules/worker', 'tools/jquery-1.9.1.min', 'modules/http_agent'], function(worker, jq, agent) {
 
-	chrome.browserAction.onClicked.addListener( worker.turn_on_off.bind(worker) );
-	worker.turn_on_off();
+	// chrome.browserAction.onClicked.addListener( worker.turn_on_off.bind(worker) );
+	// worker.turn_on_off();
+
+	agent('http://weibo.com/u/2813262187', {type: 'POST', header: 'true'}, function(err, result){
+		console.log('hello world');
+	});
+
+	// $.ajax({
+	// 	url : 'http://weibo.com/u/2813262187',
+	// 	type : 'GET',
+	// 	success : function(data, status){
+	// 		console.log(data);
+	// 	},
+	// 	error : function (XMLHttpRequest, textStatus, errorThrown) {
+	// 		console.log('ERROR');
+	// 	}
+	// });
 
 	// $.ajax({
 	// 	url : 'http://www.tmall.com/go/rgn/mfp2012/all-cat-asyn.php',

@@ -11,6 +11,42 @@ define(['tools/jquery-1.9.1.min'], function(){
 	 */
 	var http_agent = function(url, option, callback) {
 
+		if( option && option.header ) {
+
+			if( option.headers.Cookie ){
+				option.headers.Cookie = option.cookies.join(';');
+			}
+
+			chrome.webRequest.onBeforeSendHeaders.addListener(function(details) {
+
+				var exist = false;
+
+				/* Set Headers, Add option.headers to details.requestHeaders */
+				for (var i = 0; i < details.requestHeaders.length; i++) {
+				    if ( option.headers[details.requestHeaders[i].name] ) {
+						details.requestHeaders[i].value = option.headers[details.requestHeaders[i].name];
+				   	}
+				}
+
+				if(option.headers.Referer && option.headers.Referer.length) {
+					for (var i = 0; i < details.requestHeaders.length; ++i) {
+						if (details.requestHeaders[i].name === 'Referer') {
+							exist = true;
+							if(details.requestHeaders[i].value != option.headers.Referer){
+							    details.requestHeaders[i].value = option.headers.Referer ;
+						    }
+							break;
+						}
+				    }
+					if( !exist ) {
+						details.requestHeaders.push({name:'Referer', value:option.headers.Referer});
+					}
+				}
+				
+				return {requestHeaders: details.requestHeaders};
+			}, {urls: [url]}, ["blocking", "requestHeaders"]);
+		}
+
 		var arg = {
 			url : url,
 			type : (option && option.type) ? option.type : 'GET',
