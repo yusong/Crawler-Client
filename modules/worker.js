@@ -26,9 +26,7 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent'], fu
 				dispatcher[task.handler](task.url, function(err, data){
 					if( err ) callback();
 					else {
-
-						console.dir(data);
-
+						// Todo: Add conditions of when to push task to cargo
 						_self.cargo.push({
 							handler : task.handler,
 							data : data

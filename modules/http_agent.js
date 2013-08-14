@@ -11,16 +11,15 @@ define(['tools/jquery-1.9.1.min'], function(){
 	 */
 	var http_agent = function(url, option, callback) {
 
-		if( option && option.header ) {
+		if( option && option.headers ) {
 
-			if( option.headers.Cookie ){
-				option.headers.Cookie = option.cookies.join(';');
+			if( option.headers.Cookie ) {
+				option.headers.Cookie = option.headers.Cookie.join(';');
 			}
 
 			chrome.webRequest.onBeforeSendHeaders.addListener(function(details) {
 
 				var exist = false;
-
 				/* Set Headers, Add option.headers to details.requestHeaders */
 				for (var i = 0; i < details.requestHeaders.length; i++) {
 				    if ( option.headers[details.requestHeaders[i].name] ) {
@@ -42,7 +41,7 @@ define(['tools/jquery-1.9.1.min'], function(){
 						details.requestHeaders.push({name:'Referer', value:option.headers.Referer});
 					}
 				}
-				
+				console.dir(details.requestHeaders);
 				return {requestHeaders: details.requestHeaders};
 			}, {urls: [url]}, ["blocking", "requestHeaders"]);
 		}

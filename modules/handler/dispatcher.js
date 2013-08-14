@@ -60,6 +60,21 @@ define(['modules/handler/fetcher'], function(fetcher){
 
 	};
 
+	/**
+	 * Dispatcher of Weibo
+	 */
+	Dispatcher.prototype.weibo = function(url, callback) {
+
+		fetcher.weibo.fans(url, function(err, result){
+			if(err) ;
+			else {
+				callback(null, result);
+			}
+		});
+
+	}
+
+
 	return new Dispatcher();
 	
 });
