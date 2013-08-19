@@ -65,12 +65,18 @@ define(['modules/handler/fetcher'], function(fetcher){
 	 */
 	Dispatcher.prototype.weibo = function(url, callback) {
 
-		fetcher.weibo.fans(url, function(err, result){
-			if(err) ;
-			else {
-				callback(null, result);
-			}
-		});
+		if( url.match(/weibo.com\/[\d|\w]+/) ) {
+			// User Home Page
+			fetcher.weibo.home(url, function(err, result){
+				if(err) ;
+				else {
+					callback(null, result);
+				}
+			});
+		}
+		else {
+			callback('No Weibo Fetcher For ' + url);
+		}
 
 	}
 
