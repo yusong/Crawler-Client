@@ -46,16 +46,11 @@ define(['tools/jquery-1.9.1.min'], function(){
 			}, {urls: [url]}, ["blocking", "requestHeaders"]);
 		}
 
-		// chrome.webRequest.onCompleted.addListener(function(details) {
-		// 	console.dir(details);
-		// }, {urls: [url]});
-
 		var arg = {
 			url : url,
 			type : (option && option.type) ? option.type : 'GET',
 			data : (option && option.data) ? option.data : null,
-			success : function(data) { callback(null, data); },
-			error: function(data) { callback(null, data); }
+			success : function(data) { callback(null, data); }
 		};
 		$.ajax( arg ).done(function(data, textStatus, jqXHR) {
 			// console.dir(jqXHR.getAllResponseHeaders());

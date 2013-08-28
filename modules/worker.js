@@ -43,7 +43,7 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent'], fu
 				console.log('Handle: '+task.handler+' Not Found.');
 				callback();
 			}
-		}, 5);
+		}, 20);
 
 		// ack Accept Data = [
 		// 	{
@@ -67,17 +67,17 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent'], fu
 				pack.push( goods[i] );
 			}
 
-			console.dir(JSON.stringify(pack));
+			console.log('[ACK a Job]: ');console.dir(JSON.stringify(pack));
 
 			post_agent(_self.config.server + 'ack', JSON.stringify(pack), function(err, result){
 				if(err) console.log('Agent ACK Error');
 				else {
-					console.log('[Server Result] ' + result);
+					console.log('[ACK Server Result] ' + result);
 				}
 			});
 
 			callback();
-		}, 10);
+		}, 20);
 
 		_self.finishedJobsCnt = 0;
 
@@ -91,12 +91,14 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent'], fu
 				}
 
 				post_agent(_self.config.server + 'pull', '', function(err, task){
-					if(err) callback(err);
+					if(err) {
+						callback(err);
+					} 						
 					else {
 						if( task ) {
 							try {
 								task = JSON.parse(task);
-								console.log('Pull Job as: ');console.dir(task);
+								console.log('[Pull] Job as: '); console.dir(task);
 
 								if( task.urls ) {
 									task.urls.forEach(function(url){
@@ -116,7 +118,7 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent'], fu
 
 			} else {
 				// Last Job Hasn't been Finished.
-				callback('Worker is too busy.');
+				callback('Worker is too busy.'+_self.queue.length());
 			}
 		};
 
@@ -142,7 +144,7 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent'], fu
 		 */
 		var loop = function(err, sec) {
 			if( err ) console.log('ERROR: ' + err);
-			var second = sec || 30;
+			var second = sec || 20;
 			setTimeout(function(){
 				if( _self.on ) _self.run(loop);
 			}, second*1000);

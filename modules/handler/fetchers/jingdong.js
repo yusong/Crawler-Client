@@ -32,15 +32,54 @@ define(['modules/http_agent'], function(http_agent){
 			} 
 			else {
 				var result = [];
+				var number = 1;
+				var current = 1;
+				var url = ''
 				$(dom).find('#plist li .p-name a').each(function(){
 					// Product Item
 					result.push( $(this).attr("href") );
 				});
-				$(dom).find('.pagin-m .next').each(function(){
-					// Next Page
-					result.push( 'http://list.jd.com/' + $(this).attr("href") );
+
+				// Next Pages Are Created at Crawler Server!!
+				// 
+				// $(dom).find('.pagin-m .next').each(function(){
+				// 	// Next Page
+				// 	result.push( 'http://list.jd.com/' + $(this).attr("href") );
+				// });
+
+				// Instead of Getting Link of Next Page, We Get Pages Number
+				$(dom).find('.pagin-m').each(function() {
+					$(this).find('.text').each(function() {
+						$(this).find('i').each(function() {
+							current = parseInt($(this).html());
+						});
+						number = parseInt($(this).html().match(/\/(\d+)/)[1]);
+					});
+					$(this).find('.next').each(function() {
+						url = $(this).attr("href").replace(/(\d+)-(\d+)\.html/, '');
+					});
 				});
-				callback(null, {urls: result});
+
+				var rto = { urls: result };
+				if( current == 1 ) {
+					rto.pages = [];
+					for( var i = current+1; i <= number; i++ ){
+						rto.pages.push( 
+							{
+								tasks: [{
+							 		handler: 'jingdong',
+							 		urls: ['http://list.jd.com/' + url + i + '-1.html']
+							 	}]
+							}
+						);
+					}
+					console.log('[Next Pages]: '); console.dir(rto.pages);
+				} 
+				else {
+					console.log('[Next Pages]: None');
+				}
+
+				callback(null, rto);
 			}
 		});
 	}
@@ -68,8 +107,6 @@ define(['modules/http_agent'], function(http_agent){
 					pro_comment : null
 				};
 
-				console.dir(productInfo);
-
 				//商品参数
     			var attr={};
    				dom.find('ul.detail-list li').each(function(){
@@ -80,9 +117,10 @@ define(['modules/http_agent'], function(http_agent){
 
    				// 获取该商品相关的SKU
 				var skust = dom.find('#choose script').html();
-				skust = skust.substring(skust.indexOf('=')+1,skust.indexOf(';'));
-				productInfo['pro_relateSKU'] = JSON.parse(skust);
-
+				if( skust ) {
+					skust = skust.substring(skust.indexOf('=')+1,skust.indexOf(';'));				
+					productInfo['pro_relateSKU'] = JSON.parse(skust);
+				}
 
 				//商品评论详情URL
 				var commentURL = 'http://club.jd.com/clubservice/newproductcomment-' + productInfo.pro_sku + '-0-0.html';
@@ -90,7 +128,7 @@ define(['modules/http_agent'], function(http_agent){
 
 				http_agent(commentURL, {}, function(err, commenthtmldoc){
 					//获取回来的data就是json对象
-				    if(commenthtmldoc!=null&commenthtmldoc!=""){
+				    if(commenthtmldoc!=null && commenthtmldoc!="" && commenthtmldoc.CommentSummary){
 					   	comment["评论数"]=commenthtmldoc.CommentSummary.CommentCount;
 					    comment["好评数"]=commenthtmldoc.CommentSummary.GoodCount;
 					    comment["中评数"]=commenthtmldoc.CommentSummary.GeneralCount;
@@ -98,7 +136,6 @@ define(['modules/http_agent'], function(http_agent){
 					    productInfo["pro_comment"]=comment;
 					}
 
-					console.dir(productInfo);
 					callback(null, {product: productInfo});
 				});
 			}
