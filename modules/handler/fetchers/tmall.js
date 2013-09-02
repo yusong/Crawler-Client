@@ -159,7 +159,7 @@ define(['modules/http_agent'], function(http_agent){
 	}
     }
 
-	}
+
 
 
 	return new Tmall();

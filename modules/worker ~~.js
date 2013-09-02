@@ -1,4 +1,4 @@
-define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent', 'modules/QueueConf'], function(dispatcher, async, agent, QueuesConf){
+define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent'], function(dispatcher, async, agent){
 
 	var Worker = function() {
 
@@ -16,39 +16,34 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent', 'mo
 			});
 		};
 
-
 		// task = {
 		// 	url : 'url',
 		// 	handler : 'name of handler'
 		// }
 		_self.queue = async.queue(function(task, callback){
-
-			setTimeout(function(){
-				console.log(''+task.handler+' after '+QueuesConf[task.handler].timeSlice);
-				if( dispatcher[task.handler] ) {
-					try {
-						dispatcher[task.handler](task.url, function(err, data){
-							if( err ) callback();
-							else {
-								// Todo: Add conditions of when to push task to cargo
-								_self.cargo.push({
-									handler : task.handler,
-									data : data
-								});
-								callback();
-							}
-						});							
-					} catch(e) {
-						console.log('Page Error.'+e);
+			if( dispatcher[task.handler] ) {
+				try {
+				dispatcher[task.handler](task.url, function(err, data){
+					if( err ) callback();
+					else {
+						// Todo: Add conditions of when to push task to cargo
+						_self.cargo.push({
+							handler : task.handler,
+							data : data
+						});
 						callback();
-					}			
-				} else {
-					console.log('Handle: '+task.handler+' Not Found.');
-					callback();
-				}
-			}, QueuesConf[task.handler].timeSlice); 
-
-		}, 1);
+					}
+				});							
+			} catch(e) {
+				console.log('Page Error.'+e);
+				callback();
+			}
+		
+			} else {
+				console.log('Handle: '+task.handler+' Not Found.');
+				callback();
+			}
+		}, 20);
 
 
 		// ack Accept Data = [

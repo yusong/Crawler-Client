@@ -1,8 +1,33 @@
-require(['modules/worker', 'tools/jquery-1.9.1.min', 'modules/http_agent'], function(worker, jq, agent) {
+require(['modules/worker', 'tools/jquery-1.9.1.min', 'modules/http_agent', 'modules/async'], function(worker, jq, agent, async) {
 
 	chrome.browserAction.onClicked.addListener( worker.turn_on_off.bind(worker) );
 	worker.turn_on_off();
 
+	// cnt = 0;
+	// queue = async.tqueue(function(){
+	// 		cnt++;
+	// 		if( cnt % 4 == 0 ) {
+	// 			return true;
+	// 		} else {
+	// 			return false;
+	// 		}
+	// 	}, function(item, callback){
+	// 		console.log('Deal with item: ' + item + ' cnt=' + cnt);
+	// }, 3);
+	// queue.push('a1');
+	// queue.push('b2');
+	// queue.push('c3');
+	// queue.push('d4');
+	// queue.push('e5');
+	// queue.push('f6');
+	// queue.push('g7');
+	// queue.push('h8');
+	// queue.push('i9');
+	// queue.push('j10');
+	// queue.push('k11');
+	// queue.push('l12');
+	// queue.push('m13');
+	// queue.push('n14');
 
 
 	// $.ajax({
