@@ -41,23 +41,23 @@ define(['tools/jquery-1.9.1.min'], function(){
 						details.requestHeaders.push({name:'Referer', value:option.headers.Referer});
 					}
 				}
-				console.dir(details.requestHeaders);
 				return {requestHeaders: details.requestHeaders};
-			}, {urls: [url]}, ["blocking", "requestHeaders"]);
+			// }, {urls: [url]}, ["blocking", "requestHeaders"]);
+			
+			}, {urls: ["<all_urls>"]}, ["blocking", "requestHeaders"]);
 		}
 
 		var arg = {
 			url : url,
 			type : (option && option.type) ? option.type : 'GET',
 			data : (option && option.data) ? option.data : null,
-			success : function(data) { callback(null, data); }
-		};
-		$.ajax( arg ).done(function(data, textStatus, jqXHR) {
-			// console.dir(jqXHR.getAllResponseHeaders());
-		}).fail(function(jqXHR, msg){
-			callback(msg, null);
-			// console.dir(arg);
-		});
+			success : function(data) { callback(null, data); },
+      		error :function(data){
+            	callback(null,data); },
+  		};
+    	if(option.method) arg.type = option.method;
+   		if(option.payload) arg.data = option.payload;
+  		$.ajax(arg);
 
 	};
 

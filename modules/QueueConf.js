@@ -17,7 +17,6 @@ define([], function(){
 
 	};
 
-	console.dir(Queues);
 	return Queues;
 
 });

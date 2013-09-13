@@ -44,16 +44,24 @@ define(['modules/handler/fetcher'], function(fetcher){
 	 * Dispatcher of Tmall
 	 */
 	Dispatcher.prototype.tmall = function(url, callback) {
-
-		if( url.match('www.tmall.com') ) {
+		if( url.match('detail.tmall.com') ) {
 			// Index Page, async Category
-			fetcher.tmall.index('http://www.tmall.com/go/rgn/mfp2012/all-cat-asyn.php', function(err, result){
+			fetcher.tmall.productInfo(url, function(err, result){
 				if(err) ;
 				else {
 					callback(null, result);
 				}
 			});
 		} 
+		else if( url.match('http://list.tmall.com/') ) {
+			// JingDong Product Info Page
+			fetcher.tmall.productList(url, function(err, result){
+				if(err) ;
+				else {
+					callback(null, result);
+				}
+			});
+		}
 		else {
 			callback('No Tmall Fetcher For ' + 'http://www.tmall.com/go/rgn/mfp2012/all-cat-asyn.php');
 		}

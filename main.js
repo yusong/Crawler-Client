@@ -31,25 +31,35 @@ require(['modules/worker', 'tools/jquery-1.9.1.min', 'modules/http_agent', 'modu
 
 
 	// $.ajax({
-	// 	url : 'http://weibo.com/u/2813262187?wvr=5',
+	// 	url : 'http://p.3.cn/prices/get?skuid=J_271758',
 	// 	type : 'GET',
 	// 	success : function(data, status){
- //            console.log(data);
-	// 		data = data.replace(/[\n\r\f\t\v]/g, '');
-	// 		data = data.match(/FM.view\((.*?)}\)/g);
-
-	// 		for( var i in data ){
-	// 			data[i] = data[i].substring(8, data[i].length-1);
-	// 			data[i] = JSON.parse(data[i]);
-	// 		}
-	// 		console.dir(data);
+ //            console.dir($(data)[0]);
+ //            $(data)[0];
 	// 	},
 	// 	error : function (XMLHttpRequest, textStatus, errorThrown) {
 	// 		console.log('ERROR');
 	// 	}
 	// });
 
+	// agent('http://p.3.cn/prices/get?skuid=J_271758', {}, function(err, data) {
+	// 	console.dir($(data)[0].p);
+	// });
 
+	// $.ajax({
+	// 	url : 'http://www.tmall.com/go/rgn/mfp2012/all-cat-asyn.php',
+	// 	type : 'GET',
+	// 	success : function(data, status){
+	// 		// console.log(data);
+	// 		// $(data).find('.j_SubView .subItem .subItem-cat a').each(function(){
+	// 		// 	console.log($(this).attr("href") + $(this).html());
+	// 		// });
+	// 			console.log($(data).find('.j_SubView .subItem .subItem-cat a'));
+	// 	},
+	// 	error : function (XMLHttpRequest, textStatus, errorThrown) {
+	// 		console.log('ERROR');
+	// 	}
+	// });
 
 
 	// $.ajax({

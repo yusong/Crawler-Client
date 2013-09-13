@@ -7,11 +7,12 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent', 'mo
 		_self.on = 0; // Status of Worker, 1-Run or 0-Off
 
 		_self.config = {
-			server : 'http://127.0.0.1:8000/'
+			// server : 'http://127.0.0.1:8000/'
+			server : 'http://192.168.86.223:8000/'
 		};
 
 		var post_agent = function(url, data, callback) {
-			agent(url, {type: 'POST', data: data}, function(err, result){
+			agent(url, {type: 'POST', data: data}, function(err, result) {
 				callback(err, result);
 			});
 		};
@@ -24,17 +25,19 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent', 'mo
 		_self.queue = async.queue(function(task, callback){
 
 			setTimeout(function(){
-				console.log(''+task.handler+' after '+QueuesConf[task.handler].timeSlice);
+				// console.log(''+task.handler+' after '+QueuesConf[task.handler].timeSlice);
 				if( dispatcher[task.handler] ) {
 					try {
 						dispatcher[task.handler](task.url, function(err, data){
 							if( err ) callback();
 							else {
 								// Todo: Add conditions of when to push task to cargo
-								_self.cargo.push({
+								var rto = {
 									handler : task.handler,
 									data : data
-								});
+								};
+								if( task.category !== undefined ) rto.data['product'].category = task.category;
+								_self.cargo.push( rto );
 								callback();
 							}
 						});							
@@ -65,6 +68,7 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent', 'mo
 			var goods = {};
 			items.forEach(function(item){
 				goods[item.handler] = goods[item.handler] || { handler:item.handler, results:[] };
+				// if( items.category !== undefined ) item.data.category = items.category;
 				goods[item.handler].results.push(item.data);
 			});
 
@@ -108,10 +112,12 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent', 'mo
 
 								if( task.urls ) {
 									task.urls.forEach(function(url){
-										_self.queue.push({
+										var rto = {
 											handler : task.handler,
 											url : url
-										});
+										};
+										if( task.category !== undefined ) rto.category = task.category;
+										_self.queue.push( rto );
 									});
 								}
 							} catch(e) { console.log(Date(), 'sth worng', e);

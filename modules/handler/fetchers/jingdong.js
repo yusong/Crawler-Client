@@ -60,7 +60,18 @@ define(['modules/http_agent'], function(http_agent){
 					});
 				});
 
-				var rto = { urls: result };
+				// Get Category Info for InfoPage
+				var cnt = 0;
+	            var category = [];
+				$(dom).find('.breadcrumb a').each(function(){
+					console.dir( $(this).html() );
+					if( cnt < 3 ) {
+						category.push( $(this).html() );
+						cnt++;
+					}
+				});
+
+				var rto = { urls: result, category: category };
 				if( current == 1 ) {
 					rto.pages = [];
 					for( var i = current+1; i <= number; i++ ){
@@ -94,6 +105,7 @@ define(['modules/http_agent'], function(http_agent){
 				callback(err);
 			} 
 			else {
+				dom = dom.substring(dom.indexOf("<"));
 				dom = $(dom);				
 				var productInfo = {
 					pro_source : '京东',
@@ -122,22 +134,31 @@ define(['modules/http_agent'], function(http_agent){
 					productInfo['pro_relateSKU'] = JSON.parse(skust);
 				}
 
-				//商品评论详情URL
-				var commentURL = 'http://club.jd.com/clubservice/newproductcomment-' + productInfo.pro_sku + '-0-0.html';
-				var comment = {};
+				//获取商品价格URL
+				var priceURL = 'http://p.3.cn/prices/get?skuid=J_' + productInfo.pro_sku;
 
-				http_agent(commentURL, {}, function(err, commenthtmldoc){
-					//获取回来的data就是json对象
-				    if(commenthtmldoc!=null && commenthtmldoc!="" && commenthtmldoc.CommentSummary){
-					   	comment["评论数"]=commenthtmldoc.CommentSummary.CommentCount;
-					    comment["好评数"]=commenthtmldoc.CommentSummary.GoodCount;
-					    comment["中评数"]=commenthtmldoc.CommentSummary.GeneralCount;
-					    comment["差评数"]=commenthtmldoc.CommentSummary.PoorCount;
-					    productInfo["pro_comment"]=comment;
-					}
+				http_agent(priceURL, {}, function(err, pricedoc) {
+					productInfo['pro_price'] = parseInt( $(pricedoc)[0].p );
 
-					callback(null, {product: productInfo});
+					//商品评论详情URL
+					var commentURL = 'http://club.jd.com/clubservice/newproductcomment-' + productInfo.pro_sku + '-0-0.html';
+					var comment = {};
+
+					http_agent(commentURL, {}, function(err, commenthtmldoc){
+						//获取回来的data就是json对象
+					    if(commenthtmldoc!=null && commenthtmldoc!="" && commenthtmldoc.CommentSummary){
+						   	comment["评论数"]=commenthtmldoc.CommentSummary.CommentCount;
+						    comment["好评数"]=commenthtmldoc.CommentSummary.GoodCount;
+						    comment["中评数"]=commenthtmldoc.CommentSummary.GeneralCount;
+						    comment["差评数"]=commenthtmldoc.CommentSummary.PoorCount;
+						    productInfo["pro_comment"]=comment;
+						}
+
+						callback(null, {product: productInfo});
+					});					
 				});
+
+
 			}
 		});
 	}
