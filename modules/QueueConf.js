@@ -7,7 +7,7 @@ define([], function(){
 			lastTime: null
 		},
 		tmall : {
-			timeSlice: 2000,
+			timeSlice: 0,
 			lastTime: null
 		},
 		weibo : {

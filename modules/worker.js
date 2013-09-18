@@ -156,7 +156,7 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent', 'mo
 		 */
 		var loop = function(err, sec) {
 			if( err ) console.log('ERROR: ' + err);
-			var second = sec || 20;
+			var second = sec || 15;
 			setTimeout(function(){
 				if( _self.on ) _self.run(loop);
 			}, second*1000);
