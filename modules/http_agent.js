@@ -51,7 +51,11 @@ define(['tools/jquery-1.9.1.min'], function(){
 			url : url,
 			type : (option && option.type) ? option.type : 'GET',
 			data : (option && option.data) ? option.data : null,
-			success : function(data) { callback(null, data); },
+			success : function(data) { 
+				try {
+					callback(null, data); 
+				} catch(e) { throw(e); }
+			},
       		error :function(data){
             	callback(null,data); },
   		};

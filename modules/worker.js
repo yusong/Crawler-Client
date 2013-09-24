@@ -36,7 +36,15 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent', 'mo
 									handler : task.handler,
 									data : data
 								};
-								if( task.category !== undefined ) rto.data['product'].category = task.category;
+								// if( task.category !== undefined && rto.data['product'] !== undefined ) rto.data['product'].category = task.category;
+								if( task.category !== undefined ) {
+									if( rto.data['product'] !== undefined ) {
+										rto.data['product'].category = task.category;
+									} 
+									else {
+										rto.data.category = task.category;
+									}
+								}
 								_self.cargo.push( rto );
 								callback();
 							}
@@ -68,7 +76,7 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent', 'mo
 			var goods = {};
 			items.forEach(function(item){
 				goods[item.handler] = goods[item.handler] || { handler:item.handler, results:[] };
-				// if( items.category !== undefined ) item.data.category = items.category;
+				if( items.category !== undefined ) item.data.category = items.category;
 				goods[item.handler].results.push(item.data);
 			});
 
@@ -77,12 +85,12 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent', 'mo
 				pack.push( goods[i] );
 			}
 
-			console.log('[ACK a Job]: ');console.dir(JSON.stringify(pack));
+			console.log('[ACK a Job]: ');console.dir(pack);
 
 			post_agent(_self.config.server + 'ack', JSON.stringify(pack), function(err, result){
 				if(err) console.log('Agent ACK Error');
 				else {
-					console.log('[ACK Server Result] ' + result);
+					// console.log('[ACK Server Result] ' + result);
 				}
 			});
 
@@ -156,7 +164,7 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent', 'mo
 		 */
 		var loop = function(err, sec) {
 			if( err ) console.log('ERROR: ' + err);
-			var second = sec || 15;
+			var second = sec || 5;
 			setTimeout(function(){
 				if( _self.on ) _self.run(loop);
 			}, second*1000);
