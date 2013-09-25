@@ -8,7 +8,7 @@ define([], function(){
 		},
 		tmall : {
 			timeSlice: 0,
-			lastTime: 2000
+			lastTime: null
 		},
 		weibo : {
 			timeSlice: 0,

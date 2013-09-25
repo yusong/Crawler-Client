@@ -100,7 +100,6 @@ define(['modules/http_agent', 'tools/commonutil'], function(http_agent, util){
 			else {
 				try {	
 					console.log(url);
-					dom = dom.substring(dom.indexOf('<'));
 
 					if( dom.match(/<title>(.+)<\/title>/)[1] === '亲，访问受限了' ) {
 						console.log( dom.match(/<title>(.+)<\/title>/)[1] );
@@ -110,12 +109,13 @@ define(['modules/http_agent', 'tools/commonutil'], function(http_agent, util){
 					}
 					else {
 						// 没被拒绝，进行分析
+						dom = dom.substring(dom.indexOf('<'));
 						dom = $(dom);
 
 						productInfos = {
 							pro_source : '天猫',
-							pro_sku : url.match(/[?&]id=(\d+)/)[1], // SKU
-							pro_name : dom.find('div.tb-detail-hd h3 a').html(), // 商品名
+							pro_sku : null,// 商品ID
+							pro_name : dom.find('div.tb-detail-hd h3')[0].innerText, // 商品名
 							pro_url : url,
 							pro_date : new Date(),
 							pro_imgUrl : dom.find('ul#J_UlThumb li.tb-selected img').attr('src'),
@@ -148,6 +148,7 @@ define(['modules/http_agent', 'tools/commonutil'], function(http_agent, util){
 						tShopJSONst = tShopJSONst.substring(tShopJSONst.indexOf("{"), tShopJSONst.lastIndexOf("}")+1);
 						tShopJSONst = util.standardizingJSONst(tShopJSONst);
 						var jsonTShop = JSON.parse(tShopJSONst); // TShop.set的JSON数据,包括initapi,skumap...
+						productInfos['pro_sku']=util.get( jsonTShop, 'itemDO.itemId');//商品ID获取
 						//---------------end 获取天猫页面中TShop.Setup的数据-------------------//
 						
 						//---------------start 获取天猫页面中所有SKU参数选项与中文的对应-------------------//
@@ -179,50 +180,54 @@ define(['modules/http_agent', 'tools/commonutil'], function(http_agent, util){
 	                	//---------------end 获取天猫页面中所有SKUId与中文的对应-------------------//
 
 	                	var analyseSKUPrice = function(url2, callback2) {
-							http_agent(url2, {headers: {'Referer': 'http://www.google.com.hk/'}}, function(err,asb){
-								var flag = true;
-								if( asb ) {
-									try {
-										var tempobj = asb.responseText;
-										// tempobj = tempobj.replace(/[\s]/g,"");
-										tempobj = util.standardizingJSONst(tempobj);
-										var SKUInfoJSON = JSON.parse(tempobj);
-										productInfos["pro_moonsellcount"] = util.get( SKUInfoJSON, 'defaultModel.sellCountDO.sellCount' ); // 月销量
-										productInfos["pro_postage"] = {};
-										productInfos["pro_skuprice"] = {};
-										productInfos["pro_postage"] = util.get( SKUInfoJSON, 'defaultModel.deliveryDO.deliverySkuMap');
-										productInfos["pro_skuprice"] = util.get( SKUInfoJSON, 'defaultModel.itemPriceResultDO.priceInfo' );
-										
-										//强制设置默认价格（某个SKU的价格）
-										var _def = '';
-										// if( productInfos["pro_skuprice"].def && productInfos["pro_skuprice"].def.promotionList && productInfos["pro_skuprice"].def.promotionList.constructor === Array ) {
-										var promotionList = util.get( productInfos["pro_skuprice"], 'def.promotionList');
-										if( promotionList.constructor === Array && promotionList.length > 0 ) {
-											_def = promotionList[0].price;
-										}
-										else {
-											_def = util.get( productInfos["pro_skuprice"], 'def.price');
-										}
-										productInfos["pro_price"] = productInfos["pro_skuprice"].def ? _def : function() {
-											var tag = false;
-											for( var skuidi in productInfos["pro_skuprice"] ){
-												promotionList = util.get( productInfos["pro_skuprice"][skuidi], 'promotionList');
-												if( promotionList.constructor === Array && promotionList.length > 0 ) {
-										    		tag = true;
-										    		return promotionList[0].price;
-										  		}
+	                		try {
+								http_agent(url2, {headers: {'Referer': 'http://www.google.com.hk/'}}, function(err,asb){
+									var flag = true;
+									if( asb ) {
+										try {
+											var tempobj = asb.responseText;
+											// tempobj = tempobj.replace(/[\s]/g,"");
+											tempobj = util.standardizingJSONst(tempobj);
+											var SKUInfoJSON = JSON.parse(tempobj);
+											productInfos["pro_moonsellcount"] = util.get( SKUInfoJSON, 'defaultModel.sellCountDO.sellCount' ); // 月销量
+											productInfos["pro_postage"] = {};
+											productInfos["pro_skuprice"] = {};
+											productInfos["pro_postage"] = util.get( SKUInfoJSON, 'defaultModel.deliveryDO.deliverySkuMap');
+											productInfos["pro_skuprice"] = util.get( SKUInfoJSON, 'defaultModel.itemPriceResultDO.priceInfo' );
+											
+											//强制设置默认价格（某个SKU的价格）
+											var _def = '';
+											// if( productInfos["pro_skuprice"].def && productInfos["pro_skuprice"].def.promotionList && productInfos["pro_skuprice"].def.promotionList.constructor === Array ) {
+											var promotionList = util.get( productInfos["pro_skuprice"], 'def.promotionList');
+											if( promotionList.constructor === Array && promotionList.length > 0 ) {
+												_def = promotionList[0].price;
 											}
-											if( !tag ) return 0;
-										}();
+											else {
+												_def = util.get( productInfos["pro_skuprice"], 'def.price');
+											}
+											productInfos["pro_price"] = productInfos["pro_skuprice"].def ? _def : function() {
+												var tag = false;
+												for( var skuidi in productInfos["pro_skuprice"] ){
+													promotionList = util.get( productInfos["pro_skuprice"][skuidi], 'promotionList');
+													if( promotionList.constructor === Array && promotionList.length > 0 ) {
+											    		tag = true;
+											    		return promotionList[0].price;
+											  		}
+												}
+												if( !tag ) return 0;
+											}();
 
-										//结果存在这里，还没筛取,有价格，月销量，运费									
-									} catch(e) {
-										flag = false;
-										throw(e);
+											//结果存在这里，还没筛取,有价格，月销量，运费									
+										} catch(e) {
+											flag = false;
+											throw(e);
+										}
 									}
-								}
-								if( flag ) callback2( null, {product: productInfos});
-							});
+									if( flag ) callback2( null, {product: productInfos});
+								});
+							} catch(e) {
+								callback2(e);
+							}
 				   		};
 
 	                	productInfos["pro_skuNameMapId"] = skuNameMapId;

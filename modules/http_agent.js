@@ -57,7 +57,10 @@ define(['tools/jquery-1.9.1.min'], function(){
 				} catch(e) { throw(e); }
 			},
       		error :function(data){
-            	callback(null,data); },
+      			try {
+            		callback(null,data);
+            	} catch(e) { throw(e); }
+            }
   		};
     	if(option.method) arg.type = option.method;
    		if(option.payload) arg.data = option.payload;
