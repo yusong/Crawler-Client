@@ -101,9 +101,9 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent', 'mo
 
 		_self.run = function(callback) {
 
-			if( !_self.queue.length() ) {
+			if( !_self.queue.length() && !_self.cargo.length() ) {
 				// Last Job Has been Finished.
-				if( _self.finishedJobsCnt++ > 15 && (typeof window !== 'undefined') ) {
+				if( _self.finishedJobsCnt++ > 8 && (typeof window !== 'undefined') ) {
 					window.location.reload();
 					return;
 				}
@@ -155,6 +155,7 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent', 'mo
 			/* Change Status of Worker */
 			_self.on = 1 - _self.on;
 			/* Run Worker */
+			console.log(_self.on);
 			if( _self.on ) _self.run(loop);
 		};
 
@@ -171,7 +172,7 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent', 'mo
 		}
 
 	};
-
+	console.log("new worker");
 	return new Worker();
 
 });

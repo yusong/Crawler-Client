@@ -31,58 +31,68 @@ define(['modules/http_agent', 'tools/commonutil'], function(http_agent, util){
 		        callback(err);
       		} 
       		else {
-      			var result = []; // collection of products
+      			try {
+      				console.log(url);
 
-      			dom = dom.substring(dom.indexOf('<'));
-      			dom = $(dom);
-      			// Get all products of current page
-      			dom.find('div.product p.productTitle a').each(function(){
-      				result.push( $(this).attr("href").replace(/^\//,"http:/"));
-        		});
+	      			if( dom.match !== undefined ) {
+		      			var result = []; // collection of products
 
-        		// Get Category Info for InfoPage
-        		var cnt = 0;
-        		var category = [];
-        		dom.find('#J_CrumbSlideCon a').each(function(){
-        			var cat = $(this).html();
-        			if( cat && cat !== '首页' ){
-        				if( cnt < 3 ) {
-        					category.push( cat );
-        					cnt++;
-        				}
-        			}
-        		});
+		      			dom = dom.substring(dom.indexOf('<'));
+		      			dom = $(dom);
+		      			// Get all products of current page
+		      			dom.find('div.product p.productTitle a').each(function(){
+		      				result.push( $(this).attr("href").replace(/^\//,"http:/"));
+		        		});
 
-        		var rto = { urls: result, category: category };
+		        		// Get Category Info for InfoPage
+		        		var cnt = 0;
+		        		var category = [];
+		        		dom.find('#J_CrumbSlideCon a').each(function(){
+		        			var cat = $(this).html();
+		        			if( cat && cnt > 0 && cnt < 4 ){
+		        				category.push( cat );
+		        			}
+		        			cnt++;
+		        		});
 
-        		// Instead of Getting Link of Next Page, We Get Pages Number
-        		var pagePositionInfo = dom.find('b.ui-page-s-len')[0].innerText.replace(/\s/g,"");
-		        var current = parseInt(pagePositionInfo.match(/(\d+)\//)[1]);
-		        var number = parseInt(pagePositionInfo.match(/\/(\d+)/)[1]);
-		        if( current == 1 ) {
-		        	rto.pages = [];
-		        	var currentpageurl = url.replace(/#J_\S+/,"");
-		        	if( currentpageurl.indexOf('&s=') == -1 ){
-              			currentpageurl = currentpageurl + '&s=0';
-            		}
-            		for( var i = current+1; i <= number; i++ ){
-            			var ipageurl = currentpageurl.replace(/&s=\d+/,"&s="+((i-1)*60));
-            			rto.pages.push( 
-              				{
-                				tasks: [{
-                  					handler: 'tmall',
-                  					urls: [ipageurl]
-                				}]
-              				}
-              			);
-            		}
-            		console.log('[Next Pages]: '); console.dir(rto.pages);
-		        }
-		        else {
-		        	console.log('[Next Pages]: None');
-		        }
+		        		var rto = { urls: result, category: category };
 
-        		callback(null, rto);
+		        		// Instead of Getting Link of Next Page, We Get Pages Number
+		        		var pagePositionInfo = dom.find('b.ui-page-s-len')[0].innerText.replace(/\s/g,"");
+				        var current = parseInt(pagePositionInfo.match(/(\d+)\//)[1]);
+				        var number = parseInt(pagePositionInfo.match(/\/(\d+)/)[1]);
+				        if( current == 1 ) {
+				        	rto.pages = [];
+				        	var currentpageurl = url.replace(/#J_\S+/,"");
+				        	if( currentpageurl.indexOf('&s=') == -1 ){
+		              			currentpageurl = currentpageurl + '&s=0';
+		            		}
+		            		for( var i = current+1; i <= number; i++ ){
+		            			var ipageurl = currentpageurl.replace(/&s=\d+/,"&s="+((i-1)*60));
+		            			rto.pages.push( 
+		              				{
+		                				tasks: [{
+		                  					handler: 'tmall',
+		                  					urls: [ipageurl]
+		                				}]
+		              				}
+		              			);
+		            		}
+		            		console.log('[Next Pages]: '); console.dir(rto.pages);
+				        }
+				        else {
+				        	console.log('[Next Pages]: None');
+				        }
+
+		        		callback(null, rto);      				
+	      			}
+	      			else {
+	      				callback( null, { urls: [url] } );
+	      			}
+      			} catch(e) {
+      				console.log(url + " 分析异常 " + e);
+                	callback( null, { urls: [url] } );
+      			}
       		}
 		});
 	}
@@ -101,86 +111,86 @@ define(['modules/http_agent', 'tools/commonutil'], function(http_agent, util){
 				try {	
 					console.log(url);
 
-					if( dom.match(/<title>(.+)<\/title>/)[1] === '亲，访问受限了' ) {
-						console.log( dom.match(/<title>(.+)<\/title>/)[1] );
-						// 访问受限时直接推回给服务端
-						callback( null, { urls: [url] } );
-						return;
-					}
-					else {
-						// 没被拒绝，进行分析
-						dom = dom.substring(dom.indexOf('<'));
-						dom = $(dom);
-
-						productInfos = {
-							pro_source : '天猫',
-							pro_sku : null,// 商品ID
-							pro_name : dom.find('div.tb-detail-hd h3')[0].innerText, // 商品名
-							pro_url : url,
-							pro_date : new Date(),
-							pro_imgUrl : dom.find('ul#J_UlThumb li.tb-selected img').attr('src'),
-							pro_attr : null,
-							pro_relateSKU : null,
-							pro_comment : null
-						};
-
-						//商品参数
-						var attr = {};
-						dom.find('ul#J_AttrUL li').each(function(){
-	           	    		var attrarr = $(this).text().replace(":","：").split("：");
-	          	     		attr[attrarr[0]] = attrarr[1];
-	                 	});
-	                 	productInfos["pro_attr"] = attr;
-
-	                 	//---------------start 获取天猫页面中TShop.Setup的数据-------------------//
-	                 	// var tShopst=$(basehtmldoc).find('script')[0].innerText;
-	                 	var tShopst = '';
-	                 	var scriptArr = dom.find('script');
-	                 	for ( var arri in scriptArr )//获取script中TShop.Setup的内容
-	                    {
-	                      	if( arri.match(/\d+/) && scriptArr[arri].text.indexOf("TShop.Setup") > -1) {
-	                        	tShopst = scriptArr[arri].innerText;
-	                      	}
-	                    }
-	                    // tShopst = tShopst.replace(/\s/g,"");
-	          			var regTShop=/TShop\.Setup((.|\n)+?)}\);/im;
-						var tShopJSONst = regTShop.exec(tShopst)[0]; // initAPI地址
-						tShopJSONst = tShopJSONst.substring(tShopJSONst.indexOf("{"), tShopJSONst.lastIndexOf("}")+1);
-						tShopJSONst = util.standardizingJSONst(tShopJSONst);
-						var jsonTShop = JSON.parse(tShopJSONst); // TShop.set的JSON数据,包括initapi,skumap...
-						productInfos['pro_sku']=util.get( jsonTShop, 'itemDO.itemId');//商品ID获取
-						//---------------end 获取天猫页面中TShop.Setup的数据-------------------//
-						
-						//---------------start 获取天猫页面中所有SKU参数选项与中文的对应-------------------//
-	                	var selectionsCodeMapTitle = {};
-	              		dom.find('dl.tb-prop.tm-clear li').each(function(){
-			                var title = $(this).text().replace(/\s/g,"");
-			                var code = $(this).attr("data-value");
-	                 		// attr[attrarr[0]]=attrarr[1];
-	                		selectionsCodeMapTitle[code] = title;
-	                 	});
-	                	//---------------end 获取天猫页面中所有SKU参数选项与中文的对应-------------------//
-
-	                	//---------------start 获取天猫页面中所有SKUId与中文的对应-------------------//
-						var skuNameMapIdArr = [];
-						var skuNameMapId = {};
-						var skuMap = util.get( jsonTShop, 'valItemInfo.skuMap');
-						for ( var x in skuMap ) {
-							var skuName = '';
-							var arrCode = x.split(';');
-							for ( var arri in arrCode ) {
-								if( arrCode[arri] ){
-									skuName = skuName + selectionsCodeMapTitle[arrCode[arri]];
-								}
-							}
-							skuNameMapId["skuName"] = skuName;
-							skuNameMapId["skuId"] = skuMap[x].skuId;
-							skuNameMapIdArr.push(skuNameMapId);
+					if( dom.match !== undefined ) {						
+						if( dom.match(/<title>(.+)<\/title>/)[1] === '亲，访问受限了' ) {
+							console.log( dom.match(/<title>(.+)<\/title>/)[1] );
+							// 访问受限时直接推回给服务端
+							callback( null, { urls: [url] } );
+							return;
 						}
-	                	//---------------end 获取天猫页面中所有SKUId与中文的对应-------------------//
+						else {
+							// 没被拒绝，进行分析
+							dom = dom.substring(dom.indexOf('<'));
+							dom = $(dom);
 
-	                	var analyseSKUPrice = function(url2, callback2) {
-	                		try {
+							productInfos = {
+								pro_source : '天猫',
+								pro_sku : null,// 商品ID
+								pro_name : dom.find('div.tb-detail-hd h3')[0].innerText.replace(/\s/g,""), // 商品名
+								pro_url : url,
+								pro_date : new Date(),
+								pro_imgUrl : dom.find('ul#J_UlThumb li.tb-selected img').attr('src'),
+								pro_attr : null,
+								pro_relateSKU : null,
+								pro_comment : null
+							};
+
+							//商品参数
+							var attr = {};
+							dom.find('ul#J_AttrUL li').each(function(){
+		           	    		var attrarr = $(this).text().replace(":","：").split("：");
+		          	     		attr[attrarr[0]] = attrarr[1];
+		                 	});
+		                 	productInfos["pro_attr"] = attr;
+
+		                 	//---------------start 获取天猫页面中TShop.Setup的数据-------------------//
+		                 	// var tShopst=$(basehtmldoc).find('script')[0].innerText;
+		                 	var tShopst = '';
+		                 	var scriptArr = dom.find('script');
+		                 	for ( var arri in scriptArr )//获取script中TShop.Setup的内容
+		                    {
+		                      	if( arri.match(/\d+/) && scriptArr[arri].text.indexOf("TShop.Setup") > -1) {
+		                        	tShopst = scriptArr[arri].innerText;
+		                      	}
+		                    }
+		                    // tShopst = tShopst.replace(/\s/g,"");
+		          			var regTShop=/TShop\.Setup((.|\n)+?)}\);/im;
+							var tShopJSONst = regTShop.exec(tShopst)[0]; // initAPI地址
+							tShopJSONst = tShopJSONst.substring(tShopJSONst.indexOf("{"), tShopJSONst.lastIndexOf("}")+1);
+							tShopJSONst = util.standardizingJSONst(tShopJSONst);
+							var jsonTShop = JSON.parse(tShopJSONst); // TShop.set的JSON数据,包括initapi,skumap...
+							productInfos['pro_sku']=util.get( jsonTShop, 'itemDO.itemId');//商品ID获取
+							//---------------end 获取天猫页面中TShop.Setup的数据-------------------//
+							
+							//---------------start 获取天猫页面中所有SKU参数选项与中文的对应-------------------//
+		                	var selectionsCodeMapTitle = {};
+		              		dom.find('dl.tb-prop.tm-clear li').each(function(){
+				                var title = $(this).text().replace(/\s/g,"");
+				                var code = $(this).attr("data-value");
+		                 		// attr[attrarr[0]]=attrarr[1];
+		                		selectionsCodeMapTitle[code] = title;
+		                 	});
+		                	//---------------end 获取天猫页面中所有SKU参数选项与中文的对应-------------------//
+
+		                	//---------------start 获取天猫页面中所有SKUId与中文的对应-------------------//
+							var skuNameMapIdArr = [];
+							var skuNameMapId = {};
+							var skuMap = util.get( jsonTShop, 'valItemInfo.skuMap');
+							for ( var x in skuMap ) {
+								var skuName = '';
+								var arrCode = x.split(';');
+								for ( var arri in arrCode ) {
+									if( arrCode[arri] ){
+										skuName = skuName + selectionsCodeMapTitle[arrCode[arri]];
+									}
+								}
+								skuNameMapId["skuName"] = skuName;
+								skuNameMapId["skuId"] = skuMap[x].skuId;
+								skuNameMapIdArr.push(skuNameMapId);
+							}
+		                	//---------------end 获取天猫页面中所有SKUId与中文的对应-------------------//
+
+		                	var analyseSKUPrice = function(url2, ori_url, callback2) {
 								http_agent(url2, {headers: {'Referer': 'http://www.google.com.hk/'}}, function(err,asb){
 									var flag = true;
 									if( asb ) {
@@ -219,19 +229,22 @@ define(['modules/http_agent', 'tools/commonutil'], function(http_agent, util){
 
 											//结果存在这里，还没筛取,有价格，月销量，运费									
 										} catch(e) {
+											console.log("skuprice analys err");
 											flag = false;
-											throw(e);
+											// throw(e);
+											callback2( null, { urls: [ori_url] } );
 										}
 									}
 									if( flag ) callback2( null, {product: productInfos});
 								});
-							} catch(e) {
-								callback2(e);
-							}
-				   		};
+					   		};
 
-	                	productInfos["pro_skuNameMapId"] = skuNameMapId;
-	               		analyseSKUPrice( jsonTShop.initApi, callback );
+		                	productInfos["pro_skuNameMapId"] = skuNameMapId;
+		               		analyseSKUPrice( jsonTShop.initApi, url, callback );
+						}
+					} 
+					else {
+						callback( null, { urls: [url] } );
 					}
 				} catch(e) {
 					console.log(url + " 分析异常 " + e);

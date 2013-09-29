@@ -52,14 +52,10 @@ define(['tools/jquery-1.9.1.min'], function(){
 			type : (option && option.type) ? option.type : 'GET',
 			data : (option && option.data) ? option.data : null,
 			success : function(data) { 
-				try {
-					callback(null, data); 
-				} catch(e) { throw(e); }
+				callback(null, data); 
 			},
       		error :function(data){
-      			try {
-            		callback(null,data);
-            	} catch(e) { throw(e); }
+            	callback(null,data);
             }
   		};
     	if(option.method) arg.type = option.method;
