@@ -36,15 +36,24 @@ define(['modules/handler/dispatcher', 'modules/async', 'modules/http_agent', 'mo
 									handler : task.handler,
 									data : data
 								};
-								// if( task.category !== undefined && rto.data['product'] !== undefined ) rto.data['product'].category = task.category;
 								if( task.category !== undefined ) {
+									// rto.data.category = task.category;
+									rto.category = task.category;
+
 									if( rto.data['product'] !== undefined ) {
 										rto.data['product'].category = task.category;
-									} 
-									else {
+									} else {
 										rto.data.category = task.category;
+									}	
+
+									if( data.pages !== undefined ) {
+										data.pages.forEach(function(page){
+											page.tasks.forEach(function(t){
+												t.category = task.category;
+											});
+										});
 									}
-								}
+								}							
 								_self.cargo.push( rto );
 								callback();
 							}

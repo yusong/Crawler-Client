@@ -6,20 +6,35 @@
 	<script type="text/javascript" src="tools/http_agent.js"></script>
 	<script type="text/javascript" src="js/options.js"></script>
 	<script type="text/javascript" src="modules/async.js"></script>
+	<script type="text/javascript" src="js/jquery.ztree.core-3.5.min.js"></script>
+	<script type="text/javascript" src="js/jquery.ztree.excheck-3.5.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/zTreeStyle.css">
 </head>
 <body>
 	<p>hello world</p>
 	<form action="http://192.168.86.223:8000/push" method="POST">
+	<!-- <form action="http://127.0.0.1:8000/push" method="POST"> -->
 		URL: <input type="text" name="url" id="url" >
 		<select id="handler" name="handler" id="handler">
 		</select>
 	</br>
-		<input type="button" id="submit" value="提交"/>
+		<input type="button" id="submit" value="提交"/> 这个功能建议不要使用，因为无法获取目录
 	</form>
 
 	<div id="cat" >
-		<button id="cat-tmall" data="tmall">更新Tmall目录</button>
 		<button id="cat-jd" data="jingdong">更新Jingdong目录</button>
+	</div>
+
+	<style type="text/css">
+		#get-tmall-cat {
+			margin-top: 50px;
+		}
+	</style>
+	<input id="get-tmall-cat" type="button" value="输出tamll目录" />
+	<input id="submit-tmall-task" type="button" value="提任务" />
+	<input id="update-tmall-cat" type="button" value="更新MongoDB中的tmall目录" />
+	<ul id="show" class="ztree">
+		
 	</div>
 </body>
 </html>
