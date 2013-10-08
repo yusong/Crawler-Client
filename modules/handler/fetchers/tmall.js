@@ -195,7 +195,7 @@ define(['modules/http_agent', 'tools/commonutil'], function(http_agent, util){
 											// tempobj = tempobj.replace(/[\s]/g,"");
 											tempobj = util.standardizingJSONst(tempobj);
 											var SKUInfoJSON = JSON.parse(tempobj);
-											productInfos["pro_moonsellcount"] = parseInt(util.get( SKUInfoJSON, 'defaultModel.sellCountDO.sellCount' )); // 月销量
+											productInfos["pro_moonsellcount"] = parseInt(util.get( SKUInfoJSON, 'defaultModel.sellCountDO.sellCount' )) || 0; // 月销量
 											productInfos["pro_postage"] = {};
 											productInfos["pro_skuprice"] = {};
 											productInfos["pro_postage"] = util.get( SKUInfoJSON, 'defaultModel.deliveryDO.deliverySkuMap');
